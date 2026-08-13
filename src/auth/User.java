@@ -31,8 +31,12 @@ public class User {
 
     public void registerFailedAttempt() {
         failedAttempts++;
+
         if (failedAttempts >= MAX_ATTEMPTS) {
             locked = true;
+            System.out.println("Account has been locked after 3 failed login attempts.");
+        } else {
+            System.out.println("Failed attempts: " + failedAttempts + "/" + MAX_ATTEMPTS);
         }
     }
 
