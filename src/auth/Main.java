@@ -3,8 +3,7 @@ package auth;
 import java.util.Scanner;
 
 public class Main {
-    public s1
-    tatic void main(String[] args) {
+    public static void main(String[] args) {
         AuthenticationSystem authSystem = new AuthenticationSystem();
         Scanner scanner = new Scanner(System.in);
 
