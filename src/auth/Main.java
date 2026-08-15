@@ -5,6 +5,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         AuthenticationSystem authSystem = new AuthenticationSystem();
+        Database.createTable();
         Scanner scanner = new Scanner(System.in);
 
         while (true) {

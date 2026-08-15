@@ -39,6 +39,8 @@ public class AuthenticationSystem {
         User newUser = new User(username, password);
         users.add(newUser);
 
+        Database.addUser(username, newUser.getPasswordHash());
+
         System.out.println("Account created!");
         return true;
     }
