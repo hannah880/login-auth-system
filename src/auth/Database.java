@@ -2,9 +2,10 @@ package auth;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.PreparedStatement;
 
 public class Database {
 
@@ -35,28 +36,14 @@ public class Database {
         }
     }
 
-    public static boolean usernameExists(String username) {
-        String sql = "SELECT 1 FROM users WHERE username = ?";
-
-        try (Connection connection = connect();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            statement.setString(1, username);
-            var result = statement.executeQuery();
-            return result.next();
-
-        } catch (SQLException e) {
-            System.out.println("Database error: " + e.getMessage());
-            return false;
-        }
-    }
-
     public static boolean addUser(String username, String passwordHash) {
 
-        String sql = "INSERT INTO users(username, password_hash) VALUES(?, ?)";
+        String sql =
+                "INSERT INTO users(username, password_hash) VALUES(?, ?)";
 
         try (Connection connection = connect();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
 
             statement.setString(1, username);
             statement.setString(2, passwordHash);
@@ -74,14 +61,16 @@ public class Database {
 
     public static String getPasswordHash(String username) {
 
-        String sql = "SELECT password_hash FROM users WHERE username = ?";
+        String sql =
+                "SELECT password_hash FROM users WHERE username = ?";
 
         try (Connection connection = connect();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
 
             statement.setString(1, username);
 
-            var result = statement.executeQuery();
+            ResultSet result = statement.executeQuery();
 
             if (result.next()) {
                 return result.getString("password_hash");

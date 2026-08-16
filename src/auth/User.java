@@ -1,7 +1,10 @@
 package auth;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Arrays;
 
 public class User {
 
@@ -20,6 +23,7 @@ public class User {
     public String getUsername() {
         return username;
     }
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -28,22 +32,46 @@ public class User {
         return locked;
     }
 
-    public boolean checkPassword(String password) {
-        return passwordHash.equals(hash(password));
-    }
-
     public boolean checkPasswordHash(String storedHash, String password) {
-        return storedHash.equals(hash(password));
+
+        try {
+            String[] parts = storedHash.split(":");
+
+            byte[] salt = Base64.getDecoder().decode(parts[0]);
+            byte[] originalHash = Base64.getDecoder().decode(parts[1]);
+
+            PBEKeySpec spec = new PBEKeySpec(
+                    password.toCharArray(),
+                    salt,
+                    65536,
+                    256
+            );
+
+            SecretKeyFactory factory =
+                    SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+
+            byte[] newHash = factory.generateSecret(spec).getEncoded();
+
+            return Arrays.equals(originalHash, newHash);
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void registerFailedAttempt() {
+
         failedAttempts++;
 
         if (failedAttempts >= MAX_ATTEMPTS) {
             locked = true;
-            System.out.println("Account has been locked after 3 failed login attempts.");
+            System.out.println(
+                    "Account has been locked after 3 failed login attempts."
+            );
         } else {
-            System.out.println("Failed attempts: " + failedAttempts + "/" + MAX_ATTEMPTS);
+            System.out.println(
+                    "Failed attempts: " + failedAttempts + "/" + MAX_ATTEMPTS
+            );
         }
     }
 
@@ -51,16 +79,31 @@ public class User {
         failedAttempts = 0;
     }
 
-    private String hash(String input) {
+    private String hash(String password) {
+
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] bytes = digest.digest(input.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : bytes) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
+            SecureRandom random = new SecureRandom();
+
+            byte[] salt = new byte[16];
+            random.nextBytes(salt);
+
+            PBEKeySpec spec = new PBEKeySpec(
+                    password.toCharArray(),
+                    salt,
+                    65536,
+                    256
+            );
+
+            SecretKeyFactory factory =
+                    SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+
+            byte[] hash = factory.generateSecret(spec).getEncoded();
+
+            return Base64.getEncoder().encodeToString(salt)
+                    + ":"
+                    + Base64.getEncoder().encodeToString(hash);
+
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

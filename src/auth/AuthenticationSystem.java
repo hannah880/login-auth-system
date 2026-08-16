@@ -8,7 +8,6 @@ public class AuthenticationSystem {
 
     public boolean registerUser(String username, String password) {
 
-        // Check that username and password aren't empty
         if (username == null || username.isBlank()
                 || password == null || password.isBlank()) {
 
@@ -16,27 +15,30 @@ public class AuthenticationSystem {
             return false;
         }
 
-        // Check password strength
         if (!isStrongPassword(password)) {
-            System.out.println("Password must be at least 8 characters long, contain an uppercase letter and a number.");
+            System.out.println(
+                    "Password must be at least 8 characters long, " +
+                            "contain an uppercase letter and a number."
+            );
             return false;
         }
 
-        // Check if username already exists (in the database, not just this session)
-        if (Database.usernameExists(username)) {
-            System.out.println("Username already taken.");
-            return false;
+        for (User user : users) {
+
+            if (user.getUsername().equals(username)) {
+                System.out.println("Username already taken.");
+                return false;
+            }
         }
 
-        // Create the user
         User newUser = new User(username, password);
         users.add(newUser);
 
-        // Save user to database
         if (Database.addUser(username, newUser.getPasswordHash())) {
             System.out.println("Account created!");
             return true;
         }
+
         return false;
     }
 
@@ -49,18 +51,29 @@ public class AuthenticationSystem {
             return false;
         }
 
-        if (checkPassword(storedHash, password)) {
-            System.out.println("Login successful!");
-            return true;
-        } else {
-            System.out.println("Incorrect password.");
-            return false;
-        }
-    }
+        for (User user : users) {
 
-    private boolean checkPassword(String storedHash, String password) {
-        User tempUser = new User("", "");
-        return tempUser.checkPasswordHash(storedHash, password);
+            if (user.getUsername().equals(username)) {
+
+                if (user.isLocked()) {
+                    System.out.println(
+                            "Account is locked due to many failed attempts."
+                    );
+                    return false;
+                }
+
+                if (user.checkPasswordHash(storedHash, password)) {
+                    user.resetAttempts();
+                    return true;
+                }
+
+                user.registerFailedAttempt();
+                System.out.println("Incorrect password.");
+                return false;
+            }
+        }
+
+        return false;
     }
 
     private boolean isStrongPassword(String password) {
