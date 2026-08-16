@@ -32,6 +32,10 @@ public class User {
         return passwordHash.equals(hash(password));
     }
 
+    public boolean checkPasswordHash(String storedHash, String password) {
+        return storedHash.equals(hash(password));
+    }
+
     public void registerFailedAttempt() {
         failedAttempts++;
 

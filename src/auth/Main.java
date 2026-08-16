@@ -27,9 +27,8 @@ public class Main {
                     String loginUsername = scanner.nextLine();
                     System.out.print("Password: ");
                     String loginPassword = scanner.nextLine();
-                    if (authSystem.loginUser(loginUsername, loginPassword)) {
-                        System.out.println("Login successful!");
-                    } else {
+                    if (authSystem.loginUser(loginUsername, loginPassword));
+                     else {
                         System.out.println("Invalid username or password.");
                     }
                     break;
