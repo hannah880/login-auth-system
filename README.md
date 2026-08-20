@@ -65,8 +65,7 @@ The system also has account lockout after 3 failed login attempts.
 
 - Password reset
 - Email verification
-- Improved user interface
-- More advanced account management
+- Multi-factored authentication
 
 ## Author
 
